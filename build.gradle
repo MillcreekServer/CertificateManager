@@ -23,6 +23,11 @@ ext {
     token = null
 }
 
+task checkSettings{
+    if(Objects.equals(rootProject.name, "PluginTemplate")){
+        throw new RuntimeException("Change project name in settings.gradle")
+    }
+}
 
 import groovy.swing.SwingBuilder
 import org.yaml.snakeyaml.DumperOptions
@@ -37,8 +42,11 @@ task writePluginYml {
     options.setPrettyFlow(true)
 
     File file = new File("$projectDir/src/main/resources/plugin.yml")
-    if (!file.exists())
+    if (!file.exists()){
+        if(!file.parentFile.exists())
+            file.parentFile.mkdirs()
         file.createNewFile()
+    }
 
     InputStream input = new FileInputStream(file)
     Yaml yaml = new Yaml(options)
@@ -225,7 +233,7 @@ dependencies {
     compile fileTree(dir: "libs", includes: ['*.jar'])
 
     compile 'org.spigotmc:spigot-api:1.15.+'
-    compile "io.github.wysohn:RapidFramework:2.+"
+    compile "io.github.wysohn:RapidFramework:2.10.3"
 
     testCompile 'junit:junit:4.+'
     testCompile 'org.mockito:mockito-core:1.9.5'
