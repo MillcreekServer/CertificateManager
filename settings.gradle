@@ -1,0 +1,4 @@
+rootProject.name = 'PluginTemplate'
+
+include ':RapidFramework'
+project(':RapidFramework').projectDir = new File(settingsDir, '../RapidFramework')
