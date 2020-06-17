@@ -43,6 +43,10 @@ public class QuestionManager extends PluginMain.Manager {
 
     }
 
+    public List<Question> getQuestions(String certName, Locale locale) {
+        return getQuestions(certName, locale.getLanguage());
+    }
+
     public List<Question> getQuestions(String certName, String localeCode) {
         return Optional.of(certName)
                 .map(questionsMap::get)

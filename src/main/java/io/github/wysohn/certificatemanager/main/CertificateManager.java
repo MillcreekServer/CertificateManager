@@ -1,11 +1,13 @@
 package io.github.wysohn.certificatemanager.main;
 
+import io.github.wysohn.certificatemanager.manager.UserManager;
 import io.github.wysohn.rapidframework2.bukkit.main.AbstractBukkitPlugin;
 import io.github.wysohn.rapidframework2.bukkit.main.BukkitPluginBridge;
 import io.github.wysohn.rapidframework2.core.interfaces.plugin.IPluginManager;
 import io.github.wysohn.rapidframework2.core.manager.player.AbstractPlayerWrapper;
 
 import java.io.File;
+import java.lang.ref.Reference;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -23,6 +25,8 @@ public class CertificateManager extends AbstractBukkitPlugin {
 
     @Override
     protected Optional<? extends AbstractPlayerWrapper> getPlayerWrapper(UUID uuid) {
-        throw new RuntimeException("Need wrapper.");
+        return getMain().getManager(UserManager.class)
+                .flatMap(userManager -> userManager.get(uuid))
+                .map(Reference::get);
     }
 }

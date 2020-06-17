@@ -8,6 +8,7 @@ import java.util.*;
 public class User extends BukkitPlayer implements IExamTaker {
     private final Set<String> certificates = new HashSet<>();
     private final Map<String, Long> certificateExpire = new HashMap<>();
+    private final Map<String, Long> certificateRetake = new HashMap<>();
 
     private User() {
         super(null);
@@ -54,7 +55,11 @@ public class User extends BukkitPlayer implements IExamTaker {
 
     @Override
     public void setExpiration(String s, long expire) {
-        certificateExpire.put(s, expire);
+        if (expire < 0L) {
+            certificateExpire.remove(s);
+        } else {
+            certificateExpire.put(s, expire);
+        }
         notifyObservers();
     }
 
@@ -62,5 +67,22 @@ public class User extends BukkitPlayer implements IExamTaker {
     public void clearExpirations() {
         certificateExpire.clear();
         notifyObservers();
+    }
+
+    public Long getRetakeDue(String o) {
+        return certificateRetake.getOrDefault(o, -1L);
+    }
+
+    public void setRetakeDue(String s, long retakeAfter) {
+        if(retakeAfter < 0L){
+            certificateRetake.remove(s);
+        } else {
+            certificateRetake.put(s, retakeAfter);
+        }
+        notifyObservers();
+    }
+
+    public void clearRetakeDues() {
+        certificateRetake.clear();
     }
 }

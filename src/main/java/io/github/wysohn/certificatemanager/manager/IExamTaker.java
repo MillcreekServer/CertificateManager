@@ -1,6 +1,7 @@
 package io.github.wysohn.certificatemanager.manager;
 
 import java.util.Collection;
+import java.util.Locale;
 
 public interface IExamTaker {
     boolean containsCertificate(String o);
@@ -18,4 +19,6 @@ public interface IExamTaker {
     void setExpiration(String s, long expire);
 
     void clearExpirations();
+
+    Locale getLocale();
 }

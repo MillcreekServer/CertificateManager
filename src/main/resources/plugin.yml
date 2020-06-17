@@ -1,6 +1,6 @@
 api-version: '1.13'
 depend: [
-]
+  ]
 author: wysohn
 permissions:
   certificatemanager.admin:
@@ -8,19 +8,21 @@ permissions:
 name: CertificateManager
 main: io.github.wysohn.certificatemanager.main.CertificateManager
 softdepend:
-  - RapidFramework
-  - Vault
-  - PlaceholderAPI
-  - ProtocolLib
-  - WorldGuard
-  - SmartInvs
-  - ScoreboardScreen
-  - Citizens
+- RapidFramework
+- Vault
+- PlaceholderAPI
+- ProtocolLib
+- WorldGuard
+- SmartInvs
+- ScoreboardScreen
+- Citizens
 version: 1.0.0
 commands:
   certificatemanager:
     aliases:
-      - cer
+    - cer
+    - cm
+    - cmanager
     description: description
 authors: [
-]
+  ]
