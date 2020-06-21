@@ -1,0 +1,16 @@
+title:
+  default: 'Example Certificate'
+  ko: '예제 자격증'
+desc:
+  default: 'This is an example certificate.'
+  ko: '예시로 작성된 자격증 입니다.'
+numQuestions: 10 # max number of questions to pick. Ignored if not enough questions exist.
+passingGrade: 0.7
+showFeedback: true
+preRequisites: []
+expireAfterDays: -1
+retake: true
+retakeAfterSeconds: 60
+rewards:
+  commands:
+    - 'lp user <p> permission set example.finished'

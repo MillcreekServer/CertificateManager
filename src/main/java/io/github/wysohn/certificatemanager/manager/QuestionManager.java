@@ -3,6 +3,7 @@ package io.github.wysohn.certificatemanager.manager;
 import io.github.wysohn.certificatemanager.objects.Question;
 import io.github.wysohn.certificatemanager.objects.Questions;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
+import util.JarUtil;
 
 import java.io.File;
 import java.util.*;
@@ -18,7 +19,6 @@ public class QuestionManager extends PluginMain.Manager {
     @Override
     public void preload() throws Exception {
         folder = new File(main().getPluginDirectory(), "QuizBank");
-        folder.mkdirs();
     }
 
     @Override
@@ -28,6 +28,12 @@ public class QuestionManager extends PluginMain.Manager {
 
     @Override
     public void load() throws Exception {
+        if (!folder.exists())
+            JarUtil.copyFromJar(getClass(),
+                    "QuizBank/*",
+                    main().getPluginDirectory(),
+                    JarUtil.CopyOption.COPY_IF_NOT_EXIST);
+
         File[] certQuestionFolders = folder.listFiles(File::isDirectory);
         if (certQuestionFolders == null)
             return;

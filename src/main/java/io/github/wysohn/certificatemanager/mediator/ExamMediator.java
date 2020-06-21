@@ -12,8 +12,11 @@ import io.github.wysohn.rapidframework2.core.manager.common.message.MessageBuild
 import org.bukkit.conversations.Conversation;
 import util.Sampling;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ExamMediator extends PluginMain.Mediator {
@@ -70,42 +73,46 @@ public class ExamMediator extends PluginMain.Mediator {
      * @return null if the certificate with given name doesn't exist; Set of prerequisites otherwise. Set can be empty
      * if all requirements are met.
      */
-    public Set<String> missingPrerequisites(User examTaker, String certificateName){
+    public Set<String> missingPrerequisites(User examTaker, String certificateName) {
         CertificateExam certificateExam = certificateExamManager.getExam(certificateName);
-        if(certificateExam == null) {
+        if (certificateExam == null) {
             return null;
         }
 
-        return new HashSet<>(certificateExam.getPreRequisites());
+        return certificateExam.getPreRequisites().stream()
+                .filter(required -> !examTaker.containsCertificate(required))
+                .collect(Collectors.toSet());
     }
 
     /**
      * Start taking exam. This does not check if prerequisites are met.
      * Make sure to check first with {@link #missingPrerequisites(User, String)}
+     *
      * @param examTaker
      * @param certificateName
      * @param callback
      */
-    public void takeExam(User examTaker, String certificateName, Consumer<ExamResult> callback){
+    public void takeExam(User examTaker, String certificateName, ExamResultHandle callback) {
         CertificateExam certificateExam = certificateExamManager.getExam(certificateName);
-        if(certificateExam == null) {
-            callback.accept(ExamResult.NOT_EXIST);
+        if (certificateExam == null) {
+            callback.accept(ExamResult.NOT_EXIST, certificateName);
             return;
         }
 
-        if(examTaker.containsCertificate(certificateName)){
+        if (examTaker.containsCertificate(certificateName)) {
             long expire = examTaker.getExpireDate(certificateName);
-            if(expire > -1L && System.currentTimeMillis() < expire){
-                callback.accept(ExamResult.DUPLICATE);
+            if (expire < 0L) { // never expire
+                callback.accept(ExamResult.DUPLICATE, expire);
                 return;
-            } else {
-                examTaker.setExpiration(certificateName, -1L);
+            } else if (System.currentTimeMillis() < expire) { // passed expiration
+                callback.accept(ExamResult.DUPLICATE, expire);
+                return;
             }
         }
 
         long retakeDue = examTaker.getRetakeDue(certificateName);
         if(retakeDue > -1L && System.currentTimeMillis() < retakeDue){
-            callback.accept(ExamResult.RETAKE_DELAY);
+            callback.accept(ExamResult.RETAKE_DELAY, retakeDue);
             return;
         }
 
@@ -126,16 +133,17 @@ public class ExamMediator extends PluginMain.Mediator {
         });
 
         // for each question
-        int[] indices = Sampling.uniform(questions.size(), questions.size(), false);
-        for(int qIndex = 1; qIndex <= questions.size(); qIndex++){
+        int numQuestions = Math.max(1, Math.min(questions.size(), certificateExam.getNumQuestions()));
+        int[] indices = Sampling.uniform(numQuestions, numQuestions, false);
+        for (int qIndex = 1; qIndex <= questions.size(); qIndex++) {
             Question question = questions.get(indices[qIndex - 1]);
 
             // show prompt
             builder.doTask((context) -> {
                 String prompt = question.getQuestion();
                 String[] answers = question.getAnswers();
-                if(answers.length < 2)
-                    throw new RuntimeException("Question "+prompt+" of "+certificateName+" must have at least 2 answers.");
+                if (answers.length < 2)
+                    throw new RuntimeException("Question " + prompt + " of " + certificateName + " must have at least 2 answers.");
 
                 int[] answerIndices = Sampling.uniform(answers.length, answers.length, false);
 
@@ -199,8 +207,9 @@ public class ExamMediator extends PluginMain.Mediator {
         // show result
         builder.doTask((context) -> {
             // reset retake timer
-            if(certificateExam.isRetake() && certificateExam.getRetakeAfterSeconds() > 0){
-                examTaker.setRetakeDue(certificateName, certificateExam.getRetakeAfterSeconds() * SECONDS);
+            if(certificateExam.isRetake() && certificateExam.getRetakeAfterSeconds() > 0) {
+                examTaker.setRetakeDue(certificateName,
+                        System.currentTimeMillis() + certificateExam.getRetakeAfterSeconds() * SECONDS);
             }
 
             // show feedbacks
@@ -213,28 +222,29 @@ public class ExamMediator extends PluginMain.Mediator {
                     .orElse(0);
             double correctPct = (double) numCorrect / questions.size();
 
-            if(correctPct >= certificateExam.getPassingGrade()){
-                String resultParsed = main().lang().parseFirst(examTaker, CertificateManagerLangs.CertificateExamManager_Pass);
-
-                main().lang().sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Result, (sen, man) ->
-                        man.addInteger(numCorrect).addInteger(questions.size())
-                                .addDouble(certificateExam.getPassingGrade())
-                                .addString(resultParsed), true);
+            String resultParsed;
+            if(correctPct >= certificateExam.getPassingGrade()) {
+                resultParsed = main().lang().parseFirst(examTaker, CertificateManagerLangs.CertificateExamManager_Pass);
 
                 examTaker.addCertificate(certificateName);
-                examTaker.setExpiration(certificateName, certificateExam.getExpireAfterDays() * DAYS);
+                if (certificateExam.getExpireAfterDays() > 0) {
+                    examTaker.setExpiration(certificateName,
+                            System.currentTimeMillis() + certificateExam.getExpireAfterDays() * DAYS);
+                }
+
+                certificateExam.getRewards().forEach(reward -> reward.reward(main(), examTaker));
 
                 callback.accept(ExamResult.PASS);
             } else {
-                String resultParsed = main().lang().parseFirst(examTaker, CertificateManagerLangs.CertificateExamManager_Fail);
-
-                main().lang().sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Result, (sen, man) ->
-                        man.addInteger(numCorrect).addInteger(questions.size())
-                                .addDouble(certificateExam.getPassingGrade())
-                                .addString(resultParsed), true);
+                resultParsed = main().lang().parseFirst(examTaker, CertificateManagerLangs.CertificateExamManager_Fail);
 
                 callback.accept(ExamResult.FAIL);
             }
+
+            main().lang().sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Result, (sen, man) ->
+                    man.addInteger(numCorrect).addInteger(questions.size()).addDouble(correctPct * 100)
+                            .addDouble(certificateExam.getPassingGrade() * 100)
+                            .addString(resultParsed), true);
         });
 
         Conversation conversation = builder.build(examTaker.getSender());
@@ -242,7 +252,16 @@ public class ExamMediator extends PluginMain.Mediator {
         conversation.begin();
     }
 
-    public enum ExamResult{
-        NOT_EXIST, DUPLICATE, RETAKE_DELAY, NO_QUESTIONS, ABANDONED, PASS, FAIL;
+    public enum ExamResult {
+        NOT_EXIST, DUPLICATE, RETAKE_DELAY, NO_QUESTIONS, ABANDONED, PASS, FAIL
+    }
+
+    @FunctionalInterface
+    public interface ExamResultHandle {
+        default void accept(ExamResult result) {
+            accept(result, new Object[]{});
+        }
+
+        void accept(ExamResult result, Object... params);
     }
 }

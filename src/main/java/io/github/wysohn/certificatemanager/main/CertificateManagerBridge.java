@@ -12,6 +12,7 @@ import io.github.wysohn.rapidframework2.core.interfaces.entity.ICommandSender;
 import io.github.wysohn.rapidframework2.core.interfaces.plugin.IPluginManager;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
 import io.github.wysohn.rapidframework2.core.manager.command.ArgumentMapper;
+import io.github.wysohn.rapidframework2.core.manager.command.CommandAction;
 import io.github.wysohn.rapidframework2.core.manager.command.SubCommand;
 import io.github.wysohn.rapidframework2.core.manager.common.message.MessageBuilder;
 import io.github.wysohn.rapidframework2.core.manager.lang.page.ListWrapper;
@@ -19,10 +20,7 @@ import io.github.wysohn.rapidframework2.core.manager.lang.page.Pagination;
 
 import java.io.File;
 import java.lang.ref.Reference;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -92,44 +90,65 @@ public class CertificateManagerBridge extends BukkitPluginBridge {
                 .withDescription(CertificateManagerLangs.Command_Take_Desc)
                 .addUsage(CertificateManagerLangs.Command_Take_Usage)
                 .addArgumentMapper(0, ArgumentMapper.STRING)
-                .action((sender, args) -> {
-                    String key = args.get(0)
-                            .map(String.class::cast)
-                            .orElse(null);
-                    if(key == null)
-                        return false;
+                .action(new CommandAction() {
 
-                    getMain().getMediator(ExamMediator.class).ifPresent(examMediator -> {
-                        getUser(sender).ifPresent(user -> {
-                            Set<String> prerequisites = examMediator.missingPrerequisites(user, key);
-                            if(prerequisites.size() > 0){
-                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_Prerequisites, ((sen, langman) ->
-                                        langman.addString(commaSeparate(prerequisites))));
-                                return;
-                            }
+                    private void handleResult(ICommandSender sender, ExamMediator.ExamResult examResult, Object... args) {
+                        switch (examResult) {
+                            case NOT_EXIST:
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_NotExist, (sen, langman) ->
+                                        langman.addString(String.valueOf(args[0])));
+                                break;
+                            case NO_QUESTIONS:
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_NoQuestions);
+                                break;
+                            case DUPLICATE:
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_Duplicate, (sen, langman) ->
+                                        langman.addDate(new Date((long) args[0])));
+                                break;
+                            case RETAKE_DELAY:
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_Delay, (sen, langman) ->
+                                        langman.addDate(new Date((long) args[0])));
+                                break;
+                            case ABANDONED:
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_Abandoned);
+                                break;
+                            case FAIL:
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_Fail);
+                                break;
+                            case PASS:
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_Success);
+                                break;
+                        }
+                    }
 
-                            examMediator.takeExam(user, key, (examResult -> {
-                                switch (examResult){
-                                    case NOT_EXIST:
-                                        break;
-                                    case NO_QUESTIONS:
-                                        break;
-                                    case DUPLICATE:
-                                        break;
-                                    case RETAKE_DELAY:
-                                        break;
-                                    case ABANDONED:
-                                        break;
-                                    case FAIL:
-                                        break;
-                                    case PASS:
-                                        break;
+                    @Override
+                    public boolean execute(ICommandSender sender, SubCommand.Arguments args) {
+                        String key = args.get(0)
+                                .map(String.class::cast)
+                                .orElse(null);
+                        if (key == null)
+                            return false;
+
+                        getMain().getMediator(ExamMediator.class).ifPresent(examMediator -> {
+                            getUser(sender).ifPresent(user -> {
+                                Set<String> prerequisites = examMediator.missingPrerequisites(user, key);
+                                if (prerequisites == null) {
+                                    handleResult(sender, ExamMediator.ExamResult.NOT_EXIST);
+                                    return;
                                 }
-                            }));
-                        });
-                    });
 
-                    return true;
+                                if (prerequisites.size() > 0) {
+                                    getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Take_Prerequisites, ((sen, langman) ->
+                                            langman.addString(commaSeparate(prerequisites))));
+                                    return;
+                                }
+
+                                examMediator.takeExam(user, key, (result, params) -> handleResult(sender, result, params));
+                            });
+                        });
+
+                        return true;
+                    }
                 })
                 .create());
     }

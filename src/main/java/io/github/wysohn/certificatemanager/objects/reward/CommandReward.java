@@ -15,6 +15,6 @@ public class CommandReward extends StringListReward{
     public void reward(PluginMain main, User user) {
         stringList.stream()
                 .map(str -> str.replaceAll("<p>", user.getDisplayName()))
-                .forEach(str -> Bukkit.dispatchCommand(user.getSender(), str));
+                .forEach(str -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), str));
     }
 }

@@ -1,14 +1,14 @@
 package io.github.wysohn.certificatemanager.manager;
 
 import io.github.wysohn.certificatemanager.objects.User;
+import io.github.wysohn.rapidframework2.bukkit.manager.user.AbstractUserManager;
 import io.github.wysohn.rapidframework2.core.database.Database;
-import io.github.wysohn.rapidframework2.core.manager.caching.AbstractManagerElementCaching;
 import org.bukkit.Bukkit;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class UserManager extends AbstractManagerElementCaching<UUID, User> {
+public class UserManager extends AbstractUserManager<User> {
     public UserManager(int loadPriority) {
         super(loadPriority);
 

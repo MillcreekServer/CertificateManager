@@ -8,7 +8,7 @@ public enum CertificateManagerLangs implements Lang {
             "&7Once started, you may exit the exam by typing &dexit&7."),
     CertificateExamManager_Feedback_Question("&7Q.${integer} ${string}"),
     CertificateExamManager_Feedback_Answer("&7A.${integer} ${string}"),
-    CertificateExamManager_Result("&7Number of correct answers &a${integer}&8/&4${integer} &8(&a${double}%&8)",
+    CertificateExamManager_Result("&7Number of correct answers &a${integer}&8/&4${integer} &8(&e${double}%&8)",
             "&7Passing grade &8: &6${double}%",
             "&7Exam result &8: ${string}"),
     CertificateExamManager_RetakeAllowed("&eYou may retake it after ${string}"),
@@ -23,7 +23,15 @@ public enum CertificateManagerLangs implements Lang {
     Command_Take_Usage("/cer take <certificate name>"),
     Command_Take_Prerequisites("&cSome of the requirements are not met.",
             "&7Required &8: ${string}"),
-    ;
+
+    Command_Take_NotExist("&7Exam &6${string} &7does not exist."),
+    Command_Take_NoQuestions("&cThere are no question set for this exam. Contact administrator."),
+    Command_Take_Duplicate("&7You already have this certificate. Expire&8: &e${date short GMT-07:00}"),
+    Command_Take_Delay("&7You can't take it now. Wait until &e${date short GMT-07:00}"),
+    Command_Take_Abandoned("&8Exam ended."),
+    Command_Take_Fail("&cYou have failed the exam."),
+    Command_Take_Success("&aYou have passed the exam!");
+
 
     private final String[] def;
 

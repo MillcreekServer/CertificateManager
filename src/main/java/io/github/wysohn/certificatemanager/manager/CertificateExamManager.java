@@ -5,6 +5,7 @@ import io.github.wysohn.certificatemanager.objects.CertificateExam;
 import io.github.wysohn.rapidframework2.bukkit.utils.Utf8YamlConfiguration;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
 import org.bukkit.configuration.file.FileConfiguration;
+import util.JarUtil;
 
 import java.io.File;
 import java.util.*;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class CertificateExamManager extends PluginMain.Manager {
     private File folder;
-    private Map<String, CertificateExam> examMap = new HashMap<>();
+    private final Map<String, CertificateExam> examMap = new HashMap<>();
 
     public CertificateExamManager(int loadPriority) {
         super(loadPriority);
@@ -30,15 +31,21 @@ public class CertificateExamManager extends PluginMain.Manager {
 
     @Override
     public void load() throws Exception {
+        if (!folder.exists())
+            JarUtil.copyFromJar(getClass(),
+                    "CertificateExams/*",
+                    main().getPluginDirectory(),
+                    JarUtil.CopyOption.COPY_IF_NOT_EXIST);
+
         File[] examFiles = folder.listFiles(f -> f.getName().endsWith(".yml"));
-        if(examFiles != null){
+        if (examFiles != null) {
             for (File examFile : examFiles) {
                 String fileName = examFile.getName();
                 FileConfiguration configuration = new Utf8YamlConfiguration();
-                try{
+                try {
                     configuration.load(examFile);
                     examMap.put(fileName.substring(0, fileName.indexOf('.')), new CertificateExam(configuration));
-                }catch(Exception ex){
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
