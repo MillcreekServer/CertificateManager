@@ -38,6 +38,7 @@ public class QuestionManager extends PluginMain.Manager {
         if (certQuestionFolders == null)
             return;
 
+        questionsMap.clear();
         for (File certQuestionFolder : certQuestionFolders) {
             String certName = certQuestionFolder.getName();
             questionsMap.put(certName, new Questions(certQuestionFolder));

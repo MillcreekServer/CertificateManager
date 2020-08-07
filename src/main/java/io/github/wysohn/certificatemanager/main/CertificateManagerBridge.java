@@ -4,6 +4,7 @@ import io.github.wysohn.certificatemanager.manager.CertificateExamManager;
 import io.github.wysohn.certificatemanager.manager.QuestionManager;
 import io.github.wysohn.certificatemanager.manager.UserManager;
 import io.github.wysohn.certificatemanager.mediator.ExamMediator;
+import io.github.wysohn.certificatemanager.objects.BukkitArgumentMapper;
 import io.github.wysohn.certificatemanager.objects.CertificateExam;
 import io.github.wysohn.certificatemanager.objects.User;
 import io.github.wysohn.rapidframework2.bukkit.main.AbstractBukkitPlugin;
@@ -14,9 +15,11 @@ import io.github.wysohn.rapidframework2.core.main.PluginMain;
 import io.github.wysohn.rapidframework2.core.manager.command.ArgumentMapper;
 import io.github.wysohn.rapidframework2.core.manager.command.CommandAction;
 import io.github.wysohn.rapidframework2.core.manager.command.SubCommand;
+import io.github.wysohn.rapidframework2.core.manager.command.TabCompleter;
 import io.github.wysohn.rapidframework2.core.manager.common.message.MessageBuilder;
 import io.github.wysohn.rapidframework2.core.manager.lang.page.ListWrapper;
 import io.github.wysohn.rapidframework2.core.manager.lang.page.Pagination;
+import org.bukkit.OfflinePlayer;
 
 import java.io.File;
 import java.lang.ref.Reference;
@@ -57,6 +60,7 @@ public class CertificateManagerBridge extends BukkitPluginBridge {
                 .withDescription(CertificateManagerLangs.Command_List_Desc)
                 .addUsage(CertificateManagerLangs.Command_List_Usage)
                 .addArgumentMapper(0, ArgumentMapper.INTEGER)
+                .addTabCompleter(0, TabCompleter.hint("[page]"))
                 .action((sender, args) -> {
                     int page = args.get(0)
                             .map(Integer.class::cast)
@@ -90,6 +94,7 @@ public class CertificateManagerBridge extends BukkitPluginBridge {
                 .withDescription(CertificateManagerLangs.Command_Take_Desc)
                 .addUsage(CertificateManagerLangs.Command_Take_Usage)
                 .addArgumentMapper(0, ArgumentMapper.STRING)
+                .addTabCompleter(0, getExamNameCompleter())
                 .action(new CommandAction() {
 
                     private void handleResult(ICommandSender sender, ExamMediator.ExamResult examResult, Object... args) {
@@ -133,7 +138,7 @@ public class CertificateManagerBridge extends BukkitPluginBridge {
                             getUser(sender).ifPresent(user -> {
                                 Set<String> prerequisites = examMediator.missingPrerequisites(user, key);
                                 if (prerequisites == null) {
-                                    handleResult(sender, ExamMediator.ExamResult.NOT_EXIST);
+                                    handleResult(sender, ExamMediator.ExamResult.NOT_EXIST, key);
                                     return;
                                 }
 
@@ -151,6 +156,98 @@ public class CertificateManagerBridge extends BukkitPluginBridge {
                     }
                 })
                 .create());
+
+        list.add(new SubCommand.Builder(getMain(), "reset", 2)
+                .withDescription(CertificateManagerLangs.Command_Reset_Desc)
+                .addUsage(CertificateManagerLangs.Command_Reset_Usage)
+                .addArgumentMapper(0, BukkitArgumentMapper.OFFLINE_PLAYER)
+                .addArgumentMapper(1, ArgumentMapper.STRING)
+                .addTabCompleter(0, TabCompleter.PLAYER)
+                .addTabCompleter(1, getExamNameCompleter())
+                .action((sender, args) -> {
+                    OfflinePlayer offp = args.get(0)
+                            .map(OfflinePlayer.class::cast)
+                            .orElse(null);
+                    if (offp == null)
+                        return false;
+
+                    String key = args.get(1)
+                            .map(String.class::cast)
+                            .orElse(null);
+                    if (key == null)
+                        return false;
+
+                    getMain().getMediator(ExamMediator.class).ifPresent(examMediator -> {
+                        getUser(offp.getUniqueId()).ifPresent(user -> {
+                            if (examMediator.deleteCertificate(user, key)) {
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Reset_Deleted);
+                            } else {
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Reset_Failed, (sen, langman) ->
+                                        langman.addString(key));
+                            }
+                        });
+                    });
+
+                    return true;
+                })
+                .create());
+
+        list.add(new SubCommand.Builder(getMain(), "pass", 2)
+                .withDescription(CertificateManagerLangs.Command_Pass_Desc)
+                .addUsage(CertificateManagerLangs.Command_Pass_Usage)
+                .addArgumentMapper(0, BukkitArgumentMapper.OFFLINE_PLAYER)
+                .addArgumentMapper(1, ArgumentMapper.STRING)
+                .addTabCompleter(0, TabCompleter.PLAYER)
+                .addTabCompleter(1, getExamNameCompleter())
+                .action((sender, args) -> {
+                    OfflinePlayer offp = args.get(0)
+                            .map(OfflinePlayer.class::cast)
+                            .orElse(null);
+                    if (offp == null)
+                        return false;
+
+                    String key = args.get(1)
+                            .map(String.class::cast)
+                            .orElse(null);
+                    if (key == null)
+                        return false;
+
+                    getMain().getMediator(ExamMediator.class).ifPresent(examMediator -> {
+                        getUser(offp.getUniqueId()).ifPresent(user -> {
+                            if (examMediator.addCertificate(user, key)) {
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Pass_Added);
+                            } else {
+                                getMain().lang().sendMessage(sender, CertificateManagerLangs.Command_Pass_Failed, (sen, langman) ->
+                                        langman.addString(key));
+                            }
+                        });
+                    });
+
+                    return true;
+                })
+                .create());
+    }
+
+    private TabCompleter getExamNameCompleter() {
+        return new TabCompleter() {
+            @Override
+            public List<String> getCandidates(String part) {
+                return getExamNames().stream()
+                        .filter(name -> name.startsWith(part))
+                        .collect(Collectors.toList());
+            }
+
+            @Override
+            public List<String> getHint() {
+                return new ArrayList<>(getExamNames());
+            }
+        };
+    }
+
+    private Set<String> getExamNames() {
+        return getMain().getManager(CertificateExamManager.class)
+                .map(CertificateExamManager::getExamNames)
+                .orElseGet(HashSet::new);
     }
 
     private String commaSeparate(Collection<String> stringCollection) {
@@ -158,9 +255,13 @@ public class CertificateManagerBridge extends BukkitPluginBridge {
                 .collect(Collectors.joining("&8, &2", "&2", ""));
     }
 
-    private Optional<User> getUser(ICommandSender sender) {
+    private Optional<User> getUser(UUID uniqueId) {
         return getMain().getManager(UserManager.class)
-                .flatMap(userManager -> userManager.get(sender.getUuid()))
+                .flatMap(userManager -> userManager.get(uniqueId))
                 .map(Reference::get);
+    }
+
+    private Optional<User> getUser(ICommandSender sender) {
+        return getUser(sender.getUuid());
     }
 }

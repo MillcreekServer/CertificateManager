@@ -33,6 +33,10 @@ public class User extends BukkitPlayer implements IExamTaker {
     @Override
     public boolean removeCertificate(String o) {
         final boolean remove = certificates.remove(o);
+        if (remove) {
+            certificateRetake.remove(o);
+            certificateExpire.remove(o);
+        }
         notifyObservers();
         return remove;
     }

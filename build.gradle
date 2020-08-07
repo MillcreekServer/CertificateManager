@@ -87,9 +87,9 @@ task writePluginYml {
     })
     map.put("permissions", new HashMap<String, Object>() {
         {
-            put(id.toLowerCase() + ".admin", new HashMap<String, Object>() {
+            put(id.toLowerCase(), new HashMap<String, Object>() {
                 {
-                    put("description", "Grant admin permission")
+                    put("description", "root permission")
                 }
             })
         }
@@ -233,7 +233,7 @@ dependencies {
     compile fileTree(dir: "libs", includes: ['*.jar'])
 
     compile 'org.spigotmc:spigot-api:1.15.+'
-    compile "io.github.wysohn:RapidFramework:2.11.6"
+    compile "io.github.wysohn:RapidFramework:2.12.12"
 
     testCompile 'junit:junit:4.+'
     testCompile 'org.mockito:mockito-core:1.9.5'

@@ -3,8 +3,8 @@ depend: [
   ]
 author: wysohn
 permissions:
-  certificatemanager.admin:
-    description: Grant admin permission
+  certificatemanager:
+    description: root permission
 name: CertificateManager
 main: io.github.wysohn.certificatemanager.main.CertificateManager
 softdepend:

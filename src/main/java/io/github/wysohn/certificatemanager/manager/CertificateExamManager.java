@@ -38,16 +38,18 @@ public class CertificateExamManager extends PluginMain.Manager {
                     JarUtil.CopyOption.COPY_IF_NOT_EXIST);
 
         File[] examFiles = folder.listFiles(f -> f.getName().endsWith(".yml"));
-        if (examFiles != null) {
-            for (File examFile : examFiles) {
-                String fileName = examFile.getName();
-                FileConfiguration configuration = new Utf8YamlConfiguration();
-                try {
-                    configuration.load(examFile);
-                    examMap.put(fileName.substring(0, fileName.indexOf('.')), new CertificateExam(configuration));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+        if (examFiles == null)
+            return;
+
+        examMap.clear();
+        for (File examFile : examFiles) {
+            String fileName = examFile.getName();
+            FileConfiguration configuration = new Utf8YamlConfiguration();
+            try {
+                configuration.load(examFile);
+                examMap.put(fileName.substring(0, fileName.indexOf('.')), new CertificateExam(configuration));
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
     }
