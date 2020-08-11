@@ -162,7 +162,7 @@ public class ExamMediator extends PluginMain.Mediator {
         // for each question
         int numQuestions = Math.max(1, Math.min(questions.size(), certificateExam.getNumQuestions()));
         int[] indices = Sampling.uniform(numQuestions, numQuestions, false);
-        for (int qIndex = 1; qIndex <= questions.size() && qIndex - 1 < indices.length; qIndex++) {
+        for (int qIndex = 1; qIndex <= numQuestions; qIndex++) {
             Question question = questions.get(indices[qIndex - 1]);
 
             // show prompt
@@ -268,7 +268,7 @@ public class ExamMediator extends PluginMain.Mediator {
             int numCorrect = Optional.ofNullable(context.getSessionData(NUM_CORRECT))
                     .map(Integer.class::cast)
                     .orElse(0);
-            double correctPct = (double) numCorrect / questions.size();
+            double correctPct = (double) numCorrect / numQuestions;
 
             String resultParsed;
             if(correctPct >= certificateExam.getPassingGrade()) {
