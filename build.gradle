@@ -14,7 +14,7 @@ plugins {
 
 ext {
     id = project.name
-    version = '1.0.0'
+    version = '1.0.1'
     description = 'description'
     author = 'wysohn'
     authors = []
@@ -233,7 +233,7 @@ dependencies {
     compile fileTree(dir: "libs", includes: ['*.jar'])
 
     compile 'org.spigotmc:spigot-api:1.15.+'
-    compile "io.github.wysohn:RapidFramework:2.12.12"
+    compile "io.github.wysohn:RapidFramework:2.12.15"
 
     testCompile 'junit:junit:4.+'
     testCompile 'org.mockito:mockito-core:1.9.5'
