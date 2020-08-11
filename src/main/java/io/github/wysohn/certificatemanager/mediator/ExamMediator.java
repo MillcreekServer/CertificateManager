@@ -290,7 +290,7 @@ public class ExamMediator extends PluginMain.Mediator {
             }
 
             main().lang().sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Result, (sen, man) ->
-                    man.addInteger(numCorrect).addInteger(questions.size()).addDouble(correctPct * 100)
+                    man.addInteger(numCorrect).addInteger(numQuestions).addDouble(correctPct * 100)
                             .addDouble(certificateExam.getPassingGrade() * 100)
                             .addString(resultParsed), true);
 
