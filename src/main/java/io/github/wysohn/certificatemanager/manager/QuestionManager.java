@@ -3,7 +3,7 @@ package io.github.wysohn.certificatemanager.manager;
 import io.github.wysohn.certificatemanager.objects.Question;
 import io.github.wysohn.certificatemanager.objects.Questions;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
-import util.JarUtil;
+import io.github.wysohn.rapidframework2.tools.JarUtil;
 
 import java.io.File;
 import java.util.*;

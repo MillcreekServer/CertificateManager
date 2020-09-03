@@ -4,8 +4,8 @@ import io.github.wysohn.certificatemanager.mediator.ExamMediator;
 import io.github.wysohn.certificatemanager.objects.CertificateExam;
 import io.github.wysohn.rapidframework2.bukkit.utils.Utf8YamlConfiguration;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
+import io.github.wysohn.rapidframework2.tools.JarUtil;
 import org.bukkit.configuration.file.FileConfiguration;
-import util.JarUtil;
 
 import java.io.File;
 import java.util.*;

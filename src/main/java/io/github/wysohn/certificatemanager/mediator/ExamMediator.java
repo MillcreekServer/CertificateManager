@@ -11,10 +11,10 @@ import io.github.wysohn.rapidframework2.bukkit.utils.conversation.ConversationBu
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
 import io.github.wysohn.rapidframework2.core.manager.common.message.MessageBuilder;
 import io.github.wysohn.rapidframework2.core.manager.lang.DefaultLangs;
+import io.github.wysohn.rapidframework2.tools.Sampling;
 import org.bukkit.Bukkit;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
-import util.Sampling;
 
 import java.util.ArrayList;
 import java.util.List;
