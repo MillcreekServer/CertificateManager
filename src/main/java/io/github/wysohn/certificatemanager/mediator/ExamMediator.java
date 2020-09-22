@@ -305,7 +305,15 @@ public class ExamMediator extends PluginMain.Mediator {
                     .map(Boolean.class::cast)
                     .orElse(false));
             callback.accept(ExamResult.ABANDONED);
+
+            examTaker.setPreventMovement(false);
+            examTaker.setPreventCommands(false);
         });
+
+        if (certificateExam.isPreventMovement())
+            examTaker.setPreventMovement(true);
+        if (certificateExam.isPreventCommands())
+            examTaker.setPreventCommands(true);
         conversation.begin();
     }
 

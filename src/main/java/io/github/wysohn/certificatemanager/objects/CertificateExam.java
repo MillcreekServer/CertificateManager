@@ -9,8 +9,8 @@ import java.util.*;
 public class CertificateExam {
     public static final String DEFAULT = "default";
 
-    private Map<String, String> title = new HashMap<>();
-    private Map<String, String> desc = new HashMap<>();
+    private final Map<String, String> title = new HashMap<>();
+    private final Map<String, String> desc = new HashMap<>();
     private int numQuestions = 10;
     private double passingGrade = 0.7;
     private boolean showFeedback = true;
@@ -18,7 +18,9 @@ public class CertificateExam {
     private int expireAfterDays = 0;
     private boolean retake = true;
     private int retakeAfterSeconds = 60;
-    private List<Reward> rewards = new ArrayList<>();
+    private final List<Reward> rewards = new ArrayList<>();
+    private boolean preventMovement = true;
+    private boolean preventCommands = true;
 
     public CertificateExam(ConfigurationSection section) {
         title.put(DEFAULT, "None");
@@ -39,6 +41,8 @@ public class CertificateExam {
         expireAfterDays = section.getInt("expireAfterDays", 0);
         retake = section.getBoolean("retake", true);
         retakeAfterSeconds = section.getInt("retakeAfterSeconds", 60);
+        preventMovement = section.getBoolean("preventMovement", true);
+        preventCommands = section.getBoolean("preventCommands", true);
 
         rewards.add(new CommandReward(section.getStringList("rewards.commands")));
     }
@@ -85,6 +89,14 @@ public class CertificateExam {
 
     public int getRetakeAfterSeconds() {
         return retakeAfterSeconds;
+    }
+
+    public boolean isPreventMovement() {
+        return preventMovement;
+    }
+
+    public boolean isPreventCommands() {
+        return preventCommands;
     }
 
     public List<Reward> getRewards() {

@@ -7,10 +7,12 @@ desc:
 numQuestions: 10 # max number of questions to pick. Ignored if not enough questions exist.
 passingGrade: 0.7
 showFeedback: true
-preRequisites: []
+preRequisites: [ ]
 expireAfterDays: -1
 retake: true
 retakeAfterSeconds: 60
+preventMovement: true
+preventCommands: true
 rewards:
   commands:
     - 'lp user <p> permission set example.finished'

@@ -43,7 +43,9 @@ public enum CertificateManagerLangs implements Lang {
     Command_Take_Delay("&7You can't take it now. Wait until &e${date short GMT-07:00}"),
     Command_Take_Abandoned("&8Exam ended."),
     Command_Take_Fail("&cYou have failed the exam."),
-    Command_Take_Success("&aYou have passed the exam!");
+    Command_Take_Success("&aYou have passed the exam!"),
+
+    UserManager_CannotDoThatTakingExam("&cYou cannot do that while taking an exam!");
 
 
     private final String[] def;

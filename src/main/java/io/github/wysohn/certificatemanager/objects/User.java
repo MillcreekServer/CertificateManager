@@ -10,6 +10,9 @@ public class User extends BukkitPlayer implements IExamTaker {
     private final Map<String, Long> certificateExpire = new HashMap<>();
     private final Map<String, Long> certificateRetake = new HashMap<>();
 
+    private transient boolean preventMovement = false;
+    private transient boolean preventCommands = false;
+
     private User() {
         super(null);
     }
@@ -88,5 +91,21 @@ public class User extends BukkitPlayer implements IExamTaker {
 
     public void clearRetakeDues() {
         certificateRetake.clear();
+    }
+
+    public boolean isPreventMovement() {
+        return preventMovement;
+    }
+
+    public void setPreventMovement(boolean preventMovement) {
+        this.preventMovement = preventMovement;
+    }
+
+    public boolean isPreventCommands() {
+        return preventCommands;
+    }
+
+    public void setPreventCommands(boolean preventCommands) {
+        this.preventCommands = preventCommands;
     }
 }
