@@ -12,7 +12,7 @@ plugins {
     id 'groovy'
 }
 
-project.version = '1.1.0'
+project.version = '1.1.1'
 
 ext {
     id = project.name
@@ -183,6 +183,8 @@ repositories {
     if(gh_username == null || gh_token == null)
         initCredential()
 
+    println("User login: "+gh_username)
+
     jcenter()
     mavenCentral()
     maven {
@@ -235,7 +237,7 @@ dependencies {
     compile fileTree(dir: "libs", includes: ['*.jar'])
 
     compile 'org.spigotmc:spigot-api:1.15.+'
-    compile "io.github.wysohn:RapidFramework:2.22.3"
+    //compile "io.github.wysohn:RapidFramework:2.22.3"
 
     testCompile 'junit:junit:4.+'
     testCompile 'org.mockito:mockito-core:1.9.5'

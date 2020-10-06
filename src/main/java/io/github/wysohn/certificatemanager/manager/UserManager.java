@@ -84,7 +84,7 @@ public class UserManager extends AbstractUserManager<User> {
 
                 main().lang().sendMessage(BukkitWrapper.player(player),
                         CertificateManagerLangs.UserManager_CannotDoThatTakingExam, true);
-                player.chat("&8X");
+                player.acceptConversationInput("");
             }
         } else {
             currentLocation.put(player.getUniqueId(), new SimpleLocation(to.getWorld().getName(),
@@ -104,7 +104,7 @@ public class UserManager extends AbstractUserManager<User> {
 
             main().lang().sendMessage(BukkitWrapper.player(player),
                     CertificateManagerLangs.UserManager_CannotDoThatTakingExam, true);
-            player.chat("&8X");
+            player.acceptConversationInput("");
         }
     }
 
