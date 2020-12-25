@@ -1,12 +1,13 @@
 package io.github.wysohn.certificatemanager.objects;
 
-import io.github.wysohn.rapidframework2.bukkit.main.config.ConfigFileSession;
-import io.github.wysohn.rapidframework2.bukkit.main.config.I18NConfigSession;
+import io.github.wysohn.rapidframework3.bukkit.config.I18NConfigSession;
+import io.github.wysohn.rapidframework3.core.inject.factory.IStorageFactory;
+import io.github.wysohn.rapidframework3.interfaces.io.file.IFileWriter;
+import io.github.wysohn.rapidframework3.interfaces.store.IKeyValueStorage;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Questions {
     private static final String QUESTION = "Question";
@@ -14,7 +15,7 @@ public class Questions {
 
     private final List<I18NConfigSession> configSessions = new ArrayList<>();
 
-    public Questions(File certQuestionFolder) {
+    public Questions(IFileWriter fileWriter, IStorageFactory storageFactory, File certQuestionFolder) {
         File[] questions = certQuestionFolder.listFiles(f -> f.getName().endsWith(".yml")
                 && f.getName().indexOf('_') == -1);
         if (questions == null)
@@ -26,7 +27,10 @@ public class Questions {
             if (dotIndex == -1)
                 continue;
 
-            I18NConfigSession configSession = new I18NConfigSession(certQuestionFolder, question.getName().substring(0, dotIndex));
+            I18NConfigSession configSession = new I18NConfigSession(fileWriter,
+                    storageFactory,
+                    certQuestionFolder,
+                    question.getName().substring(0, dotIndex));
             try {
                 configSession.load();
                 configSessions.add(configSession);
@@ -41,12 +45,11 @@ public class Questions {
         configSessions.stream()
                 .map(session -> session.getSession(localeCode))
                 .map(this::configToQuestion)
-                .filter(Objects::nonNull)
                 .forEach(questions::add);
         return questions;
     }
 
-    private Question configToQuestion(ConfigFileSession config) {
+    private Question configToQuestion(IKeyValueStorage config) {
         String prompt = config.get(QUESTION)
                 .map(String.class::cast)
                 .orElseThrow(() -> new RuntimeException("Failed to get " + QUESTION + " from " + config));

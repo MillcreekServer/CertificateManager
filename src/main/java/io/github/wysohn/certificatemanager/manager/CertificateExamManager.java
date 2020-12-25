@@ -2,26 +2,33 @@ package io.github.wysohn.certificatemanager.manager;
 
 import io.github.wysohn.certificatemanager.mediator.ExamMediator;
 import io.github.wysohn.certificatemanager.objects.CertificateExam;
-import io.github.wysohn.rapidframework2.bukkit.utils.Utf8YamlConfiguration;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
-import io.github.wysohn.rapidframework2.tools.JarUtil;
+import io.github.wysohn.rapidframework3.bukkit.utils.Utf8YamlConfiguration;
+import io.github.wysohn.rapidframework3.core.inject.annotations.PluginDirectory;
+import io.github.wysohn.rapidframework3.core.main.Manager;
+import io.github.wysohn.rapidframework3.utils.JarUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CertificateExamManager extends PluginMain.Manager {
+@Singleton
+public class CertificateExamManager extends Manager {
+    private final File pluginDirectory;
+
     private File folder;
     private final Map<String, CertificateExam> examMap = new HashMap<>();
 
-    public CertificateExamManager(int loadPriority) {
-        super(loadPriority);
+    @Inject
+    public CertificateExamManager(@PluginDirectory File pluginDirectory) {
+        this.pluginDirectory = pluginDirectory;
     }
 
     @Override
     public void preload() throws Exception {
-        folder = new File(main().getPluginDirectory(), "CertificateExams");
+        folder = new File(pluginDirectory, "CertificateExams");
     }
 
     @Override
@@ -34,7 +41,7 @@ public class CertificateExamManager extends PluginMain.Manager {
         if (!folder.exists())
             JarUtil.copyFromJar(getClass(),
                     "CertificateExams/*",
-                    main().getPluginDirectory(),
+                    pluginDirectory,
                     JarUtil.CopyOption.COPY_IF_NOT_EXIST);
 
         File[] examFiles = folder.listFiles(f -> f.getName().endsWith(".yml"));

@@ -7,15 +7,19 @@ import io.github.wysohn.certificatemanager.objects.CertificateExam;
 import io.github.wysohn.certificatemanager.objects.Question;
 import io.github.wysohn.certificatemanager.objects.User;
 import io.github.wysohn.certificatemanager.objects.events.PlayerExamFinishedEvent;
-import io.github.wysohn.rapidframework2.bukkit.utils.conversation.ConversationBuilder;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
-import io.github.wysohn.rapidframework2.core.manager.common.message.MessageBuilder;
-import io.github.wysohn.rapidframework2.core.manager.lang.DefaultLangs;
-import io.github.wysohn.rapidframework2.tools.Sampling;
+import io.github.wysohn.rapidframework3.bukkit.utils.conversation.ConversationBuilder;
+import io.github.wysohn.rapidframework3.core.language.DefaultLangs;
+import io.github.wysohn.rapidframework3.core.language.ManagerLanguage;
+import io.github.wysohn.rapidframework3.core.main.Mediator;
+import io.github.wysohn.rapidframework3.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.core.message.MessageBuilder;
+import io.github.wysohn.rapidframework3.utils.Sampling;
 import org.bukkit.Bukkit;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +27,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ExamMediator extends PluginMain.Mediator {
+@Singleton
+public class ExamMediator extends Mediator {
     public static final long SECONDS = 1000L;
     public static final long DAYS = SECONDS * 60L * 60L * 24L;
 
@@ -33,22 +38,25 @@ public class ExamMediator extends PluginMain.Mediator {
     public static final String QUESTION = "question";
     public static final String ANSWERS = "answers";
 
-    public boolean deleteCertificate(User examTaker, String certificateName) {
-        CertificateExam certificateExam = certificateExamManager.getExam(certificateName);
-        if (certificateExam == null) {
-            return false;
-        }
+    private final PluginMain main;
+    private final ManagerLanguage lang;
+    private final CertificateExamManager certificateExamManager;
+    private final QuestionManager questionManager;
 
-        return examTaker.removeCertificate(certificateName);
+    @Inject
+    public ExamMediator(PluginMain main,
+                        ManagerLanguage lang,
+                        CertificateExamManager certificateExamManager,
+                        QuestionManager questionManager) {
+        this.main = main;
+        this.lang = lang;
+        this.certificateExamManager = certificateExamManager;
+        this.questionManager = questionManager;
     }
-
-    private CertificateExamManager certificateExamManager;
-    private QuestionManager questionManager;
 
     @Override
     public void enable() throws Exception {
-        certificateExamManager = main().getManager(CertificateExamManager.class).get();
-        questionManager = main().getManager(QuestionManager.class).get();
+        
     }
 
     @Override
@@ -69,6 +77,15 @@ public class ExamMediator extends PluginMain.Mediator {
         return certificateExamManager.getExams();
     }
 
+    public boolean deleteCertificate(User examTaker, String certificateName) {
+        CertificateExam certificateExam = certificateExamManager.getExam(certificateName);
+        if (certificateExam == null) {
+            return false;
+        }
+
+        return examTaker.removeCertificate(certificateName);
+    }
+    
     public static class ExamPair{
         public final String key;
         public final CertificateExam exam;
@@ -149,10 +166,10 @@ public class ExamMediator extends PluginMain.Mediator {
             return;
         }
 
-        ConversationBuilder builder = ConversationBuilder.of(main());
+        ConversationBuilder builder = ConversationBuilder.of(main);
 
         // show welcome
-        builder.doTask(context -> main().lang().sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Welcome,
+        builder.doTask(context -> lang.sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Welcome,
                 ((sen, langman) -> langman.addString(certificateExam.getTitle(examTaker.getLocale()))
                         .addString(certificateExam.getDesc(examTaker.getLocale()))),
                 true));
@@ -175,8 +192,8 @@ public class ExamMediator extends PluginMain.Mediator {
 
                 int[] answerIndices = Sampling.uniform(answers.length, answers.length, false);
 
-                main().lang().sendMessage(examTaker, DefaultLangs.General_Line, true);
-                main().lang().sendRawMessage(examTaker, MessageBuilder.forMessage("  &6" + prompt)
+                lang.sendMessage(examTaker, DefaultLangs.General_Line, true);
+                lang.sendRawMessage(examTaker, MessageBuilder.forMessage("  &6" + prompt)
                                 .build(),
                         true);
 
@@ -186,7 +203,7 @@ public class ExamMediator extends PluginMain.Mediator {
                         context.setSessionData(ANSWER_INDEX, visibleIndex);
                     }
 
-                    main().lang().sendRawMessage(examTaker, MessageBuilder.forMessage("    &d[" + visibleIndex + "] &f")
+                    lang.sendRawMessage(examTaker, MessageBuilder.forMessage("    &d[" + visibleIndex + "] &f")
                             .append(answers[answerIndex])
                             .withClickRunCommand(String.valueOf(visibleIndex))
                             .withHoverShowText("&7A." + visibleIndex)
@@ -195,7 +212,7 @@ public class ExamMediator extends PluginMain.Mediator {
                     visibleIndex++;
                 }
 
-                main().lang().sendMessage(examTaker, DefaultLangs.General_Line, true);
+                lang.sendMessage(examTaker, DefaultLangs.General_Line, true);
 
                 context.setSessionData(QUESTION, prompt);
                 context.setSessionData(ANSWERS, IntStream.of(answerIndices)
@@ -226,7 +243,7 @@ public class ExamMediator extends PluginMain.Mediator {
                             .orElseGet(ArrayList::new);
 
                     feedbackList.add(() -> {
-                        main().lang().sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Feedback_Question, (lan, man) ->
+                        lang.sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Feedback_Question, (lan, man) ->
                                         man.addInteger(finalQIndex).addString(prompt),
                                 true);
                         for (int k = 1; k <= answers.length; k++) {
@@ -238,12 +255,12 @@ public class ExamMediator extends PluginMain.Mediator {
 
                             int finalK = k;
                             String finalMark = mark;
-                            main().lang().sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Feedback_Answer, (lan, man) ->
+                            lang.sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Feedback_Answer, (lan, man) ->
                                             man.addInteger(finalK).addString(answers[finalK - 1]).addString(finalMark),
                                     true);
                         }
 
-                        main().lang().sendRawMessage(examTaker, MessageBuilder.empty(), true);
+                        lang.sendRawMessage(examTaker, MessageBuilder.empty(), true);
                     });
 
                     context.setSessionData(FEEDBACKS, feedbackList);
@@ -272,7 +289,7 @@ public class ExamMediator extends PluginMain.Mediator {
 
             String resultParsed;
             if(correctPct >= certificateExam.getPassingGrade()) {
-                resultParsed = main().lang().parseFirst(examTaker, CertificateManagerLangs.CertificateExamManager_Pass);
+                resultParsed = lang.parseFirst(examTaker, CertificateManagerLangs.CertificateExamManager_Pass);
 
                 examTaker.addCertificate(certificateName);
                 if (certificateExam.getExpireAfterDays() > 0) {
@@ -280,16 +297,16 @@ public class ExamMediator extends PluginMain.Mediator {
                             System.currentTimeMillis() + certificateExam.getExpireAfterDays() * DAYS);
                 }
 
-                certificateExam.getRewards().forEach(reward -> reward.reward(main(), examTaker));
+                certificateExam.getRewards().forEach(reward -> reward.reward(main, examTaker));
 
                 callback.accept(ExamResult.PASS);
             } else {
-                resultParsed = main().lang().parseFirst(examTaker, CertificateManagerLangs.CertificateExamManager_Fail);
+                resultParsed = lang.parseFirst(examTaker, CertificateManagerLangs.CertificateExamManager_Fail);
 
                 callback.accept(ExamResult.FAIL);
             }
 
-            main().lang().sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Result, (sen, man) ->
+            lang.sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Result, (sen, man) ->
                     man.addInteger(numCorrect).addInteger(numQuestions).addDouble(correctPct * 100)
                             .addDouble(certificateExam.getPassingGrade() * 100)
                             .addString(resultParsed), true);

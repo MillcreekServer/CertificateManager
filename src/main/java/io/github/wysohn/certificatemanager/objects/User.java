@@ -1,7 +1,7 @@
 package io.github.wysohn.certificatemanager.objects;
 
 import io.github.wysohn.certificatemanager.manager.IExamTaker;
-import io.github.wysohn.rapidframework2.bukkit.main.objects.BukkitPlayer;
+import io.github.wysohn.rapidframework3.bukkit.data.BukkitPlayer;
 
 import java.util.*;
 

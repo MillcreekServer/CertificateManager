@@ -1,7 +1,7 @@
 package io.github.wysohn.certificatemanager.objects.reward;
 
 import io.github.wysohn.certificatemanager.objects.User;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.core.main.PluginMain;
 import org.bukkit.Bukkit;
 
 import java.util.List;

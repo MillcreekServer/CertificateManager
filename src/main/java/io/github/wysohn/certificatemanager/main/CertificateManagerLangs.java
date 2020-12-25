@@ -1,8 +1,8 @@
 package io.github.wysohn.certificatemanager.main;
 
-import io.github.wysohn.rapidframework2.core.manager.lang.Lang;
+import io.github.wysohn.rapidframework3.interfaces.language.ILang;
 
-public enum CertificateManagerLangs implements Lang {
+public enum CertificateManagerLangs implements ILang {
     General_InvalidPlayer("&6${string} &cis not online."),
     General_InvalidOfflinePlayer("&There is no player named 6${string}&c."),
 

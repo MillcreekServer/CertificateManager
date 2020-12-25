@@ -12,7 +12,7 @@ plugins {
     id 'groovy'
 }
 
-project.version = '1.1.1'
+project.version = '2.0.0'
 
 ext {
     id = project.name
@@ -135,7 +135,6 @@ task writeBaseCodes{
         packagePath.toFile().mkdirs()
 
     File mainFile = new File("$projectDir/templates/Main.java")
-    File bridgeFile = new File("$projectDir/templates/Bridge.java")
     File langFile = new File("$projectDir/templates/Langs.java")
 
     Map placeholders = [
@@ -143,7 +142,6 @@ task writeBaseCodes{
             "%pluginname%": id.toLowerCase(),
     ]
     replaceAndCopy(mainFile, Paths.get(packagePath.toString(), id + ".java"), placeholders)
-    replaceAndCopy(bridgeFile, Paths.get(packagePath.toString(), id + "Bridge.java"), placeholders)
     replaceAndCopy(langFile, Paths.get(packagePath.toString(), id + "Langs.java"), placeholders)
 }
 
@@ -200,7 +198,7 @@ repositories {
         url "https://repo.extendedclip.com/content/repositories/placeholderapi/"
     }
     maven {
-        url "https://maven.pkg.github.com/wysohn/RapidFramework"
+        url "https://maven.pkg.github.com/millcreekserver/rapidframework"
         credentials {
             username = gh_username
             password = gh_token
@@ -237,7 +235,7 @@ dependencies {
     compile fileTree(dir: "libs", includes: ['*.jar'])
 
     compile 'org.spigotmc:spigot-api:1.15.+'
-    //compile "io.github.wysohn:RapidFramework:2.22.3"
+    compile "io.github.wysohn:rapidframework:3.14.3"
 
     testCompile 'junit:junit:4.+'
     testCompile 'org.mockito:mockito-core:1.9.5'

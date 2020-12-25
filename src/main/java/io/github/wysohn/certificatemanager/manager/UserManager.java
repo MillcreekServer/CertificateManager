@@ -1,11 +1,19 @@
 package io.github.wysohn.certificatemanager.manager;
 
+import com.google.inject.Injector;
 import io.github.wysohn.certificatemanager.main.CertificateManagerLangs;
 import io.github.wysohn.certificatemanager.objects.User;
-import io.github.wysohn.rapidframework2.bukkit.main.objects.BukkitWrapper;
-import io.github.wysohn.rapidframework2.bukkit.manager.user.AbstractUserManager;
-import io.github.wysohn.rapidframework2.core.database.Database;
-import io.github.wysohn.rapidframework2.core.objects.location.SimpleLocation;
+import io.github.wysohn.rapidframework3.bukkit.data.BukkitWrapper;
+import io.github.wysohn.rapidframework3.bukkit.manager.user.AbstractUserManager;
+import io.github.wysohn.rapidframework3.core.database.Databases;
+import io.github.wysohn.rapidframework3.core.inject.annotations.PluginDirectory;
+import io.github.wysohn.rapidframework3.core.inject.annotations.PluginLogger;
+import io.github.wysohn.rapidframework3.core.language.ManagerLanguage;
+import io.github.wysohn.rapidframework3.core.main.ManagerConfig;
+import io.github.wysohn.rapidframework3.data.SimpleLocation;
+import io.github.wysohn.rapidframework3.interfaces.plugin.IShutdownHandle;
+import io.github.wysohn.rapidframework3.interfaces.serialize.ISerializer;
+import io.github.wysohn.rapidframework3.interfaces.serialize.ITypeAsserter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -15,24 +23,35 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import java.io.File;
 import java.lang.ref.Reference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Logger;
 
+@Singleton
 public class UserManager extends AbstractUserManager<User> {
+    private final ManagerLanguage lang;
+    
     public Map<UUID, SimpleLocation> currentLocation = new HashMap<>();
 
-    public UserManager(int loadPriority) {
-        super(loadPriority);
-
-        setConstructionHandle(user -> {
-            UUID uuid = user.getKey();
-            Optional.of(uuid)
-                    .map(Bukkit::getPlayer)
-                    .ifPresent(user::setSender);
-        });
+    @Inject
+    public UserManager(@Named("pluginName") String pluginName,
+                       @PluginLogger Logger logger,
+                       ManagerConfig config,
+                       @PluginDirectory File pluginDir,
+                       IShutdownHandle shutdownHandle,
+                       ISerializer serializer,
+                       ITypeAsserter asserter,
+                       Injector injector,
+                       ManagerLanguage lang) {
+        super(pluginName, logger, config, pluginDir, shutdownHandle, serializer, asserter, injector, User.class);
+        this.lang = lang;
     }
 
     @EventHandler
@@ -82,7 +101,7 @@ public class UserManager extends AbstractUserManager<User> {
                         prev.getY(),
                         prev.getZ() + 0.5));
 
-                main().lang().sendMessage(BukkitWrapper.player(player),
+                lang.sendMessage(BukkitWrapper.player(player),
                         CertificateManagerLangs.UserManager_CannotDoThatTakingExam, true);
                 player.acceptConversationInput("");
             }
@@ -102,15 +121,15 @@ public class UserManager extends AbstractUserManager<User> {
         if (optUser.map(User::isPreventCommands).orElse(false)) {
             event.setCancelled(true);
 
-            main().lang().sendMessage(BukkitWrapper.player(player),
+            lang.sendMessage(BukkitWrapper.player(player),
                     CertificateManagerLangs.UserManager_CannotDoThatTakingExam, true);
             player.acceptConversationInput("");
         }
     }
 
     @Override
-    protected Database.DatabaseFactory<User> createDatabaseFactory() {
-        return getDatabaseFactory(User.class, "User");
+    protected Databases.DatabaseFactory createDatabaseFactory() {
+        return getDatabaseFactory("User");
     }
 
     @Override

@@ -1,24 +1,41 @@
 package io.github.wysohn.%pluginname%.main;
 
-import io.github.wysohn.rapidframework2.bukkit.main.AbstractBukkitPlugin;
-import io.github.wysohn.rapidframework2.bukkit.main.BukkitPluginBridge;
-import io.github.wysohn.rapidframework2.core.interfaces.plugin.IPluginManager;
-import io.github.wysohn.rapidframework2.core.manager.player.AbstractPlayerWrapper;
+import io.github.wysohn.rapidframework3.bukkit.main.AbstractBukkitPlugin;
+import io.github.wysohn.rapidframework3.core.command.SubCommand;
+import io.github.wysohn.rapidframework3.core.inject.module.LanguagesModule;
+import io.github.wysohn.rapidframework3.core.inject.module.ManagerModule;
+import io.github.wysohn.rapidframework3.core.inject.module.MediatorModule;
+import io.github.wysohn.rapidframework3.core.main.PluginMainBuilder;
+import io.github.wysohn.rapidframework3.core.player.AbstractPlayerWrapper;
+import org.bukkit.plugin.java.JavaPluginLoader;
 
-import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 public class $pluginname$ extends AbstractBukkitPlugin {
-    @Override
-    protected BukkitPluginBridge createCore() {
-        return new $pluginname$Bridge(this);
+    public $pluginname$() {
+    }
+
+    private $pluginname$(JavaPluginLoader mockLoader) {
+        super(mockLoader);
     }
 
     @Override
-    protected BukkitPluginBridge createCore(String s, String s1, String s2, String s3, Logger logger, File file, IPluginManager iPluginManager) {
-        return new $pluginname$Bridge(s, s1, s2, s3, logger, file, iPluginManager, this);
+    protected void init(PluginMainBuilder pluginMainBuilder) {
+        pluginMainBuilder.addModule(new LanguagesModule(PluginTempLangs.values()));
+        pluginMainBuilder.addModule(new ManagerModule(
+                //TODO your managers
+        ));
+        pluginMainBuilder.addModule(new MediatorModule(
+                //TODO your mediators
+        ));
+        //TODO and some other modules as your need...
+    }
+
+    @Override
+    protected void registerCommands(List<SubCommand> list) {
+        //TODO register commands
     }
 
     @Override

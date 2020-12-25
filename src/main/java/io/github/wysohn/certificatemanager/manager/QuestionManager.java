@@ -2,23 +2,38 @@ package io.github.wysohn.certificatemanager.manager;
 
 import io.github.wysohn.certificatemanager.objects.Question;
 import io.github.wysohn.certificatemanager.objects.Questions;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
-import io.github.wysohn.rapidframework2.tools.JarUtil;
+import io.github.wysohn.rapidframework3.core.inject.annotations.PluginDirectory;
+import io.github.wysohn.rapidframework3.core.inject.factory.IStorageFactory;
+import io.github.wysohn.rapidframework3.core.main.Manager;
+import io.github.wysohn.rapidframework3.interfaces.io.file.IFileWriter;
+import io.github.wysohn.rapidframework3.utils.JarUtil;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.util.*;
 
-public class QuestionManager extends PluginMain.Manager {
+@Singleton
+public class QuestionManager extends Manager {
+    private final File pluginDirectory;
+    private final IFileWriter fileWriter;
+    private final IStorageFactory storageFactory;
+
     private final Map<String, Questions> questionsMap = new HashMap<>();
     private File folder;
 
-    public QuestionManager(int loadPriority) {
-        super(loadPriority);
+    @Inject
+    public QuestionManager(@PluginDirectory File pluginDirectory,
+                           IFileWriter fileWriter,
+                           IStorageFactory storageFactory) {
+        this.pluginDirectory = pluginDirectory;
+        this.fileWriter = fileWriter;
+        this.storageFactory = storageFactory;
     }
 
     @Override
     public void preload() throws Exception {
-        folder = new File(main().getPluginDirectory(), "QuizBank");
+        folder = new File(pluginDirectory, "QuizBank");
     }
 
     @Override
@@ -31,7 +46,7 @@ public class QuestionManager extends PluginMain.Manager {
         if (!folder.exists())
             JarUtil.copyFromJar(getClass(),
                     "QuizBank/*",
-                    main().getPluginDirectory(),
+                    pluginDirectory,
                     JarUtil.CopyOption.COPY_IF_NOT_EXIST);
 
         File[] certQuestionFolders = folder.listFiles(File::isDirectory);
@@ -41,7 +56,7 @@ public class QuestionManager extends PluginMain.Manager {
         questionsMap.clear();
         for (File certQuestionFolder : certQuestionFolders) {
             String certName = certQuestionFolder.getName();
-            questionsMap.put(certName, new Questions(certQuestionFolder));
+            questionsMap.put(certName, new Questions(fileWriter, storageFactory, certQuestionFolder));
         }
     }
 
