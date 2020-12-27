@@ -221,8 +221,11 @@ public class ExamMediator extends Mediator {
                             .withHoverShowText("&7A." + i)
                             .append(" ");
                 }
-                lang.sendRawMessage(examTaker, answersBuilder.build(), true);
                 lang.sendMessage(examTaker, DefaultLangs.General_Line, true);
+                if(lang.isJsonEnabled()){
+                    lang.sendRawMessage(examTaker, answersBuilder.build(), true);
+                    lang.sendMessage(examTaker, CertificateManagerLangs.CertificateExamManager_Feedback_ClickAnswers, true);
+                }
 
                 context.setSessionData(QUESTION, prompt);
                 context.setSessionData(ANSWERS, IntStream.of(answerIndices)

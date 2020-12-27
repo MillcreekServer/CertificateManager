@@ -11,6 +11,7 @@ public enum CertificateManagerLangs implements ILang {
             "&7Once started, you may exit the exam by typing &dexit&7."),
     CertificateExamManager_Feedback_Question("&8[&7Q.${integer}&8] &7${string}"),
     CertificateExamManager_Feedback_Answer("  &8[&7A.${integer}&8] &7${string} ${string}"),
+    CertificateExamManager_Feedback_ClickAnswers("&7Click the answer, or"),
     CertificateExamManager_Result("&7Number of correct answers &a${integer}&8/&4${integer} &8(&e${double}%&8)",
             "&7Passing grade &8: &6${double}%",
             "&7Exam result &8: ${string}"),
