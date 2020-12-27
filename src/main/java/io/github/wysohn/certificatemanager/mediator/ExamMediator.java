@@ -212,6 +212,16 @@ public class ExamMediator extends Mediator {
                     visibleIndex++;
                 }
 
+                // list answer buttons at bottom
+                lang.sendRawMessage(examTaker, MessageBuilder.empty(), true);
+                for(int i = 1; i < visibleIndex; i++){
+                    lang.sendRawMessage(examTaker, MessageBuilder.forMessage("&d["+i+"]&f")
+                            .withClickRunCommand(String.valueOf(i))
+                            .withHoverShowText("&7A." + i)
+                            .append(" ")
+                            .build(), true);
+                }
+
                 lang.sendMessage(examTaker, DefaultLangs.General_Line, true);
 
                 context.setSessionData(QUESTION, prompt);
