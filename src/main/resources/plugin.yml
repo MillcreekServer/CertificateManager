@@ -8,7 +8,7 @@ permissions:
 name: CertificateManager
 main: io.github.wysohn.certificatemanager.main.CertificateManager
 softdepend:
-- rapidframework
+- RapidFramework
 - Vault
 - PlaceholderAPI
 - ProtocolLib
@@ -16,7 +16,7 @@ softdepend:
 - SmartInvs
 - ScoreboardScreen
 - Citizens
-version: 2.0.0
+version: 2.1.2
 commands:
   certificatemanager:
     aliases:
