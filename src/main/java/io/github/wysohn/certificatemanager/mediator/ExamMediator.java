@@ -214,14 +214,14 @@ public class ExamMediator extends Mediator {
 
                 // list answer buttons at bottom
                 lang.sendRawMessage(examTaker, MessageBuilder.empty(), true);
+                MessageBuilder answersBuilder = MessageBuilder.forMessage("&8>> ");
                 for(int i = 1; i < visibleIndex; i++){
-                    lang.sendRawMessage(examTaker, MessageBuilder.forMessage("&d["+i+"]&f")
+                    answersBuilder.append("&d[ "+i+" ]&f")
                             .withClickRunCommand(String.valueOf(i))
                             .withHoverShowText("&7A." + i)
-                            .append(" ")
-                            .build(), true);
+                            .append(" ");
                 }
-
+                lang.sendRawMessage(examTaker, answersBuilder.build(), true);
                 lang.sendMessage(examTaker, DefaultLangs.General_Line, true);
 
                 context.setSessionData(QUESTION, prompt);
